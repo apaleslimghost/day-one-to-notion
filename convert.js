@@ -11,6 +11,9 @@ mkdir(path.join(dir, 'out'));
 
 const sanitise = t => t.replace(/[^\w ]/g, '');
 
+const pad2 = n => (n < 10 ? '0' : '') + n;
+const dateString = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
 files.forEach(f => {
 	const base = f.replace(/\.json$/, '');
 	mkdir(path.join(dir, 'out', base));
@@ -24,12 +27,13 @@ files.forEach(f => {
 		const [title, ...rest] = (entry.text || '').split('\n');
 		const text = rest.join('\n');
 		const name = sanitise(title);
+		const date = new Date(entry.creationDate);
 		console.log(`${i + 1}/${l}`, title);
 
 		const location = entry.location
 			? `${entry.location.placeName}
 
-[](https://www.google.com/maps/embed/v1/search?key=AIzaSyBctFF2JCjitURssT91Am-_ZWMzRaYBm4Q&q=${entry.location.latitude},${entry.location.longitude})`
+[![${entry.location.placeName}](https://maps.googleapis.com/maps/api/staticmap?center=${entry.location.latitude},${entry.location.longitude}&zoom=15&size=400x400&scale=2)](https://www.google.com/maps/embed/v1/search?key=AIzaSyBctFF2JCjitURssT91Am-_ZWMzRaYBm4Q&q=${entry.location.latitude},${entry.location.longitude})`
 			: '';
 
 		const tags = (entry.tags || []).map(
@@ -39,10 +43,8 @@ files.forEach(f => {
 		).join(' ');
 
 		fs.writeFileSync(
-			path.join(dir, 'out', base, `${name}.md`),
+			path.join(dir, 'out', base, `${dateString(date)} ${name}.md`),
 			`# ${title}
-
-${entry.creationDate}
 
 ${text}
 
